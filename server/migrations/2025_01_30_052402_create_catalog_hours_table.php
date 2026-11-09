@@ -4,7 +4,6 @@ use Fleetbase\Support\Utils;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 return new class extends Migration {
     /**
@@ -16,7 +15,9 @@ return new class extends Migration {
 
         Schema::connection(config('storefront.connection.db'))->create('catalog_hours', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->uuid('uuid')->unique()->default(Str::uuid()->toString());
+            // No literal default: Str::uuid() here was evaluated once at migration time (same value for every row,
+            // different per install). HasUuid generates each uuid; a raw insert without one now fails explicitly.
+            $table->uuid('uuid')->unique();
             $table->foreignUuid('catalog_uuid')
                 ->references('uuid')->on('catalogs')
                 ->onUpdate('CASCADE')
